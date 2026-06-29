@@ -12,6 +12,7 @@ find the answer faster than the docs.
 | Date | Topic | Area |
 | --- | --- | --- |
 | [2026-06-28](entries/2026-06-28.md) | Multi-window, multi-burn-rate SLO alerting | SRE / Observability |
+| [2026-06-29](entries/2026-06-29.md) | Kubernetes requests vs limits: throttling & OOMKills | Kubernetes / Reliability |
 
 ## Areas covered
 
