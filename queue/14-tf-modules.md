@@ -1,0 +1,43 @@
+# {{DATE}} — Terraform modules for reuse
+
+**Area:** Terraform / IaC · **Tags:** `terraform` `modules` `iac`
+
+## What a module is
+A **module** is a container for multiple resources used together. Every Terraform configuration has at least one module — the **root module** in the working directory. Any set of `.tf` files in a directory can be called as a **child module** by another configuration.
+
+Modules let you package a chunk of infrastructure once and reuse it with different inputs.
+
+## Inputs, outputs, and calling
+A module exposes **input variables** and returns **output values**. Callers pass inputs via a `module` block and reference outputs as `module.<name>.<output>`.
+
+```hcl
+module "web_bucket" {
+  source  = "./modules/s3-bucket"
+  name    = "my-app-assets"
+  versioning = true
+}
+
+resource "aws_cloudfront_distribution" "cdn" {
+  origin {
+    domain_name = module.web_bucket.bucket_domain_name
+    origin_id   = "s3-origin"
+  }
+  # ...
+}
+```
+
+## Versioned, shared modules
+`source` can point to a local path, a Git repository, or the Terraform Registry. For registry and Git sources you should pin a **version** so upgrades are deliberate.
+
+```hcl
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.0"
+  # ...
+}
+```
+
+## Takeaway
+Wrap repeated infrastructure in modules with clear inputs and outputs, and pin versions on shared ones so you reuse patterns without copy-paste drift.
+
+**Source:** [Terraform docs — Modules](https://developer.hashicorp.com/terraform/language/modules)

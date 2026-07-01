@@ -1,0 +1,36 @@
+# {{DATE}} — S3 storage classes and lifecycle policies
+
+**Area:** AWS / Storage · **Tags:** `aws` `s3` `storage`
+
+## Matching cost to access pattern
+Amazon S3 offers storage classes tuned to different access frequencies. Cheaper storage generally means higher retrieval cost or latency.
+
+- **S3 Standard** — frequent access; low latency, high throughput.
+- **S3 Standard-IA / One Zone-IA** — infrequent access; lower storage cost, per-GB retrieval fee. One Zone-IA stores in a single AZ.
+- **S3 Intelligent-Tiering** — automatically moves objects between access tiers based on usage; no retrieval fees.
+- **S3 Glacier Instant Retrieval / Flexible Retrieval / Deep Archive** — archival, from milliseconds to hours of retrieval time at the lowest storage cost.
+
+## Lifecycle policies
+Instead of moving objects manually, define **lifecycle rules** to transition or expire objects automatically as they age.
+
+```json
+{
+  "Rules": [{
+    "ID": "archive-then-delete",
+    "Filter": { "Prefix": "logs/" },
+    "Status": "Enabled",
+    "Transitions": [
+      { "Days": 30,  "StorageClass": "STANDARD_IA" },
+      { "Days": 90,  "StorageClass": "GLACIER" }
+    ],
+    "Expiration": { "Days": 365 }
+  }]
+}
+```
+
+This moves `logs/` objects to Standard-IA after 30 days, to Glacier after 90, and deletes them after a year.
+
+## Takeaway
+Pick a storage class per access pattern, then let lifecycle rules transition and expire objects automatically so cost tracks the data's real value over time.
+
+**Source:** [Amazon S3 User Guide — Managing your storage lifecycle](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html)

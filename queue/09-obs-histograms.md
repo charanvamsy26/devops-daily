@@ -1,0 +1,38 @@
+# {{DATE}} — Prometheus histograms and quantiles
+
+**Area:** Observability / Prometheus · **Tags:** `prometheus` `histogram` `quantile`
+
+## What a histogram exposes
+A Prometheus `histogram` samples observations into cumulative buckets. For a metric `http_request_duration_seconds` it produces:
+- `..._bucket{le="<upper bound>"}` — cumulative count of observations ≤ that bound
+- `..._sum` — total sum of all observed values
+- `..._count` — total number of observations
+
+Buckets are **cumulative**: the `le="+Inf"` bucket equals `_count`.
+
+```
+http_request_duration_seconds_bucket{le="0.1"} 24054
+http_request_duration_seconds_bucket{le="0.5"} 33444
+http_request_duration_seconds_bucket{le="1"}   34999
+http_request_duration_seconds_bucket{le="+Inf"} 35000
+http_request_duration_seconds_sum   82154.0
+http_request_duration_seconds_count 35000
+```
+
+## Computing quantiles
+Use `histogram_quantile()` over the per-bucket rate. Always `rate()` the buckets first and aggregate `by (le)`:
+
+```promql
+histogram_quantile(0.95,
+  sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+```
+
+The result is an **estimate** — accuracy depends on bucket boundaries. A quantile that falls inside a wide bucket is interpolated linearly, so choose buckets around your SLO thresholds.
+
+## Histogram vs summary
+A `summary` calculates quantiles client-side and cannot be aggregated across instances. A `histogram` ships raw buckets, so you can aggregate across many instances server-side and pick quantiles at query time — the right choice for SLOs.
+
+## Takeaway
+Histograms store cumulative buckets you aggregate and feed to `histogram_quantile()`; unlike summaries they are aggregatable across instances, at the cost of quantile accuracy bounded by bucket width.
+
+**Source:** [Prometheus Docs — Histograms and Summaries](https://prometheus.io/docs/practices/histograms/)

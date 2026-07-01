@@ -1,0 +1,44 @@
+# {{DATE}} — PodDisruptionBudgets and voluntary disruptions
+
+**Area:** Kubernetes / Reliability · **Tags:** `kubernetes` `pdb` `availability`
+
+## Voluntary vs involuntary disruptions
+Kubernetes distinguishes two kinds of disruption:
+
+- **Involuntary** — hardware failure, kernel panic, node running out of resources. Nothing can budget these away.
+- **Voluntary** — operator-driven actions like `kubectl drain`, node upgrades, or cluster autoscaler scale-down.
+
+A **PodDisruptionBudget (PDB)** limits how many Pods of an application can be *voluntarily* disrupted at once, protecting availability during maintenance.
+
+## Defining a budget
+Use either `minAvailable` or `maxUnavailable` (not both), as a count or percentage:
+
+```yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: web
+```
+
+With `minAvailable: 2`, the Eviction API refuses a drain request that would drop the count of ready, matching Pods below 2. The drain then blocks and retries until it is safe.
+
+## How it enforces
+PDBs are honored by the **Eviction API**, which `kubectl drain` uses. Tools that delete Pods directly (a plain `kubectl delete pod`) bypass the budget — the PDB only guards eviction-based flows.
+
+```bash
+kubectl get pdb web-pdb
+# NAME      MIN AVAILABLE   ALLOWED DISRUPTIONS
+# web-pdb   2               1
+```
+
+A misconfigured PDB (e.g. `minAvailable` equal to replica count) can **block node drains indefinitely**, so budgets should always leave slack.
+
+## Takeaway
+PDBs protect availability during voluntary disruptions by gating the Eviction API — set them with headroom so maintenance can proceed while your app stays up.
+
+**Source:** [Kubernetes docs — Specifying a Disruption Budget for your Application](https://kubernetes.io/docs/tasks/run-application/configure-pdb/)

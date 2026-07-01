@@ -1,0 +1,48 @@
+# {{DATE}} — RED and USE monitoring methods
+
+**Area:** Observability / SRE · **Tags:** `monitoring` `red` `use`
+
+## RED method
+For **request-driven services**, track three signals per service:
+- **R**ate — requests per second
+- **E**rrors — failed requests per second
+- **D**uration — distribution of request latency
+
+```promql
+# Rate
+sum(rate(http_requests_total[5m]))
+
+# Error ratio
+sum(rate(http_requests_total{code=~"5.."}[5m]))
+  / sum(rate(http_requests_total[5m]))
+
+# p99 duration (from a histogram)
+histogram_quantile(0.99,
+  sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+```
+
+RED describes what your **users** experience.
+
+## USE method
+For **resources** (CPU, memory, disk, network interfaces), check:
+- **U**tilization — percent of time the resource is busy
+- **S**aturation — how much extra work is queued/waiting
+- **E**rrors — count of error events
+
+```promql
+# CPU utilization
+1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m]))
+
+# Saturation: run-queue length waiting on CPU
+node_load1
+```
+
+USE points you at **which resource** is the bottleneck once RED shows a symptom.
+
+## How they complement each other
+RED is a symptom-oriented, service view; USE is a cause-oriented, resource view. Alert on RED (what users feel), then use USE dashboards to localize the failing resource during investigation.
+
+## Takeaway
+Use RED to monitor services from the user's perspective and USE to diagnose which underlying resource is exhausted.
+
+**Source:** [Prometheus Docs — Instrumentation Best Practices](https://prometheus.io/docs/practices/instrumentation/)

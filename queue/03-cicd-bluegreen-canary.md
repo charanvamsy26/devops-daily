@@ -1,0 +1,34 @@
+# {{DATE}} — Blue-green vs canary deployments
+
+**Area:** CI/CD / Delivery · **Tags:** `deployment` `bluegreen` `canary`
+
+## Blue-green
+Two identical production environments run side by side: **blue** (current) and **green** (new). You deploy the new version to the idle environment, run smoke tests, then flip 100% of traffic at once by re-pointing the router or load balancer. Rollback is instant — flip traffic back to the still-warm old environment.
+
+```
+# All traffic on blue, deploy to green, then switch
+kubectl patch service my-app -p \
+  '{"spec":{"selector":{"version":"green"}}}'
+```
+
+Trade-off: you pay for double the infrastructure while both environments are live, and every user moves at the same instant.
+
+## Canary
+The new version receives a **small slice of traffic** first (e.g. 5%), you watch error rate and latency, then progressively increase the weight until it reaches 100%. Bad releases only affect a fraction of users before you halt and roll back.
+
+```yaml
+# Traffic split: 95% stable, 5% canary
+- destination: { host: my-app, subset: stable }
+  weight: 95
+- destination: { host: my-app, subset: canary }
+  weight: 5
+```
+
+## When to use which
+- **Blue-green:** fast, all-or-nothing cutover; simplest to reason about; good when you cannot run mixed versions.
+- **Canary:** gradual exposure with real production traffic as the test signal; better blast-radius control but needs good metrics and automated analysis.
+
+## Takeaway
+Blue-green optimizes for instant, atomic switchover and rollback; canary optimizes for limiting blast radius by exposing the new version to a small, growing share of traffic.
+
+**Source:** [Kubernetes Blog — Canary Deployments](https://kubernetes.io/blog/2018/04/30/zero-downtime-deployment-kubernetes-jenkins/)

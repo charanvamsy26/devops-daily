@@ -1,0 +1,39 @@
+# {{DATE}} — Alertmanager routing and grouping
+
+**Area:** Observability / Alerting · **Tags:** `alertmanager` `routing` `grouping`
+
+## The routing tree
+Alertmanager takes alerts fired by Prometheus and dispatches them to receivers via a **routing tree**. It starts at the top-level `route` and walks child routes; each alert takes the first matching branch. `continue: true` lets an alert match multiple branches.
+
+```yaml
+route:
+  receiver: default-pager
+  group_by: ['alertname', 'cluster']
+  routes:
+    - matchers: [ severity="critical" ]
+      receiver: pagerduty
+    - matchers: [ team="frontend" ]
+      receiver: frontend-slack
+```
+
+## Grouping
+`group_by` collapses many related alerts into a **single notification**. When a whole cluster of nodes fires the same alert, you get one grouped message instead of hundreds.
+
+- `group_wait` — how long to wait for other alerts in a new group before sending the first notification (buffer for batching).
+- `group_interval` — minimum wait before sending an updated notification for an existing group.
+- `repeat_interval` — how long before re-sending a notification for an alert that is still firing.
+
+```yaml
+group_by: ['alertname', 'cluster']
+group_wait: 30s
+group_interval: 5m
+repeat_interval: 4h
+```
+
+## Inhibition
+An **inhibit rule** mutes lower-priority alerts when a higher-priority one is already firing — e.g. suppress per-node warnings when the whole cluster is down, so responders aren't buried.
+
+## Takeaway
+Route alerts to the right receiver with matchers, batch noisy related alerts with `group_by` plus the wait/interval timers, and use inhibition to silence redundant lower-severity alerts.
+
+**Source:** [Prometheus Docs — Alertmanager Configuration](https://prometheus.io/docs/alerting/latest/configuration/)

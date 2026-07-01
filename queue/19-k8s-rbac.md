@@ -1,0 +1,58 @@
+# {{DATE}} — Kubernetes RBAC: Roles and bindings
+
+**Area:** Kubernetes / Security · **Tags:** `kubernetes` `security` `rbac`
+
+## Four objects, one model
+Role-Based Access Control in Kubernetes uses four API objects in the `rbac.authorization.k8s.io` group:
+
+- **Role** — a set of permissions **within a namespace**.
+- **ClusterRole** — permissions that are **cluster-scoped** or reusable across namespaces (also required for cluster-wide resources like nodes).
+- **RoleBinding** — grants a Role (or ClusterRole) to subjects **in one namespace**.
+- **ClusterRoleBinding** — grants a ClusterRole to subjects **cluster-wide**.
+
+RBAC is purely **additive** — there are no deny rules. If no rule grants an action, it is denied by default.
+
+## A namespaced Role
+Rules combine `apiGroups`, `resources`, and `verbs`:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: dev
+  name: pod-reader
+rules:
+- apiGroups: [""]          # "" = core API group
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+```
+
+## Binding it to a subject
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: dev
+subjects:
+- kind: User
+  name: jane
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+```
+
+Subjects can be a **User**, **Group**, or **ServiceAccount**. Note that a RoleBinding can reference a ClusterRole, which is a handy pattern: define a common role once cluster-wide, then bind it namespace-by-namespace.
+
+## Verifying access
+```bash
+kubectl auth can-i list pods --namespace dev --as jane
+# yes
+```
+
+## Takeaway
+RBAC grants permissions additively via Roles/ClusterRoles bound to subjects; keep Roles namespaced and least-privilege, and use `kubectl auth can-i` to verify.
+
+**Source:** [Kubernetes docs — Using RBAC Authorization](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)

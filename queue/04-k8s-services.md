@@ -1,0 +1,44 @@
+# {{DATE}} — Kubernetes Services and kube-proxy
+
+**Area:** Kubernetes / Networking · **Tags:** `kubernetes` `networking` `services`
+
+## A Service is a stable front for ephemeral Pods
+Pods are mortal — they come and go with new IPs. A **Service** provides a stable virtual IP (the ClusterIP) and DNS name that load-balances across a set of Pods selected by labels.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  selector:
+    app: web
+  ports:
+  - port: 80          # the Service port
+    targetPort: 8080  # the container port
+```
+
+The set of backing Pod IPs is tracked in **EndpointSlice** objects, kept in sync by the endpoints controller as Pods pass readiness.
+
+## Service types
+- **ClusterIP** (default) — reachable only inside the cluster.
+- **NodePort** — exposes the Service on a static port on every node.
+- **LoadBalancer** — provisions an external load balancer (cloud provider).
+- **ExternalName** — maps the Service to a DNS name via a CNAME, no proxying.
+
+## kube-proxy implements the virtual IP
+`kube-proxy` runs on each node and programs the dataplane so traffic to a ClusterIP is redirected to a healthy backend Pod. Modes:
+
+- **iptables** — installs rules that randomly pick a backend; simple and widely used.
+- **IPVS** — uses the kernel's in-kernel load balancer, scaling better with many Services.
+
+```bash
+kubectl get endpointslices -l kubernetes.io/service-name=web
+```
+
+Because kube-proxy works at the connection level, the ClusterIP itself never answers pings — it is a virtual construct realized by these rules.
+
+## Takeaway
+Services give Pods a durable identity; kube-proxy (via iptables or IPVS) turns that virtual IP into actual load-balanced connections to ready backends.
+
+**Source:** [Kubernetes docs — Service](https://kubernetes.io/docs/concepts/services-networking/service/)

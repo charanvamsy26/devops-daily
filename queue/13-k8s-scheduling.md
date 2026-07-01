@@ -1,0 +1,56 @@
+# {{DATE}} — Taints, tolerations, and node affinity
+
+**Area:** Kubernetes / Scheduling · **Tags:** `kubernetes` `scheduling` `affinity`
+
+## Two sides of placement
+Placement is controlled from both directions:
+
+- **Taints** repel Pods from nodes. A tainted node will not accept a Pod unless the Pod has a matching **toleration**.
+- **Node affinity** attracts Pods to nodes based on node labels.
+
+Taints/tolerations are a *repulsion* mechanism; affinity is an *attraction* mechanism. They are complementary — tolerations only allow scheduling, they do not guarantee it.
+
+## Taints and tolerations
+Taint a node, then tolerate it on Pods that may run there:
+
+```bash
+kubectl taint nodes gpu-node-1 dedicated=gpu:NoSchedule
+```
+
+```yaml
+tolerations:
+- key: "dedicated"
+  operator: "Equal"
+  value: "gpu"
+  effect: "NoSchedule"
+```
+
+The three effects: **NoSchedule** (don't place new Pods), **PreferNoSchedule** (soft avoid), and **NoExecute** (also evict already-running Pods that don't tolerate).
+
+## Node affinity
+Node affinity expresses rules against node labels, in hard and soft flavors:
+
+```yaml
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values: ["us-east-1a"]
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 50
+      preference:
+        matchExpressions:
+        - key: disktype
+          operator: In
+          values: ["ssd"]
+```
+
+`required...` is a hard constraint (Pod stays Pending if unmet); `preferred...` is a weighted preference the scheduler tries to honor.
+
+## Takeaway
+Use taints to keep general workloads off special nodes, tolerations to admit the right Pods, and node affinity to steer Pods onto nodes with the labels they need.
+
+**Source:** [Kubernetes docs — Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)

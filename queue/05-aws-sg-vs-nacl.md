@@ -1,0 +1,32 @@
+# {{DATE}} — Security groups vs network ACLs
+
+**Area:** AWS / Networking · **Tags:** `aws` `vpc` `networking`
+
+## Two layers of VPC filtering
+A VPC gives you two independent packet filters:
+
+- **Security groups** operate at the **instance/ENI level**.
+- **Network ACLs (NACLs)** operate at the **subnet level**.
+
+Traffic to an instance passes the subnet's NACL first, then the instance's security group; return traffic passes them in reverse.
+
+## Stateful vs stateless
+This is the key distinction.
+
+- **Security groups are stateful**: if you allow an inbound request, the response is automatically allowed out, regardless of outbound rules. You only write the rules for the direction you initiate.
+- **NACLs are stateless**: each packet is evaluated independently, so you must add explicit rules for **both** the request and its return traffic (often on ephemeral ports 1024–65535).
+
+## Allow vs deny
+Security groups support **allow rules only** — anything not explicitly allowed is denied. NACLs support both **allow and deny** rules, evaluated in **rule-number order**, so they can be used to block a specific IP that a security group cannot.
+
+```text
+# Example NACL inbound rules (evaluated low-to-high)
+Rule 100  ALLOW  0.0.0.0/0  TCP 443
+Rule 200  DENY   198.51.100.7/32  ALL
+Rule *    DENY   (default catch-all)
+```
+
+## Takeaway
+Use stateful security groups as your primary, instance-level allow-list; reach for stateless NACLs when you need coarse, subnet-wide guardrails or explicit deny rules.
+
+**Source:** [Amazon VPC User Guide — Compare security groups and network ACLs](https://docs.aws.amazon.com/vpc/latest/userguide/infrastructure-security.html)

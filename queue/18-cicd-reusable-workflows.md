@@ -1,0 +1,51 @@
+# {{DATE}} — Reusable and matrix GitHub Actions workflows
+
+**Area:** CI/CD · **Tags:** `github-actions` `reusable` `matrix`
+
+## Reusable workflows
+A workflow that declares `on: workflow_call` can be invoked from other workflows, so shared CI logic lives in one file. Inputs and secrets are passed in explicitly.
+
+```yaml
+# .github/workflows/build.yml (the reusable one)
+on:
+  workflow_call:
+    inputs:
+      node-version: { required: true, type: string }
+```
+
+Call it from another workflow with `uses:` at the **job** level:
+
+```yaml
+jobs:
+  call-build:
+    uses: ./.github/workflows/build.yml
+    with:
+      node-version: '20'
+```
+
+## Matrix builds
+A `strategy.matrix` runs a job once per combination of variables — ideal for testing across versions or OSes in parallel.
+
+```yaml
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [18, 20]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+```
+
+This example expands to 4 parallel jobs. Add `fail-fast: false` to let all combinations finish even if one fails.
+
+## Combining them
+You can call a reusable workflow from inside a matrix, so one shared build definition runs across every matrix combination — DRY plus broad coverage.
+
+## Takeaway
+`workflow_call` factors shared CI into one reusable file, and `strategy.matrix` fans a job out across version/OS combinations in parallel.
+
+**Source:** [GitHub Docs — Reusing Workflows](https://docs.github.com/actions/using-workflows/reusing-workflows)
