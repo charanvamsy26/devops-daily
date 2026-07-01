@@ -14,6 +14,7 @@ find the answer faster than the docs.
 | [2026-06-28](entries/2026-06-28.md) | Multi-window, multi-burn-rate SLO alerting | SRE / Observability |
 | [2026-06-29](entries/2026-06-29.md) | Kubernetes requests vs limits: throttling & OOMKills | Kubernetes / Reliability |
 | [2026-06-30](entries/2026-06-30.md) | Terraform remote state locking with S3 + DynamoDB | Terraform / IaC |
+| [2026-07-01](entries/2026-07-01.md) | GitHub Actions → AWS with OIDC (no long-lived keys) | CI/CD / DevSecOps |
 
 ## Areas covered
 
