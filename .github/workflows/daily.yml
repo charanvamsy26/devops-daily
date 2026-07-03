@@ -2,10 +2,15 @@ name: Daily TIL
 
 on:
   schedule:
-    # 08:00 UTC daily (~4am ET). Runs in GitHub's cloud — no local machine needed.
-    # GitHub may delay scheduled runs under load; the daily commit keeps the repo
-    # active so the schedule is not auto-disabled.
-    - cron: "0 8 * * *"
+    # Multiple times per day for resilience: GitHub's scheduler is best-effort and
+    # frequently delays runs by hours or skips them. The publish script is
+    # idempotent (it no-ops once today's entry exists), so whichever cron fires
+    # first publishes and the rest do nothing. Times span the US-Eastern daytime
+    # (12:00/16:00/20:00 UTC ≈ 8am/12pm/4pm ET) so the commit lands on the correct
+    # day even with several hours of scheduler delay.
+    - cron: "0 12 * * *"
+    - cron: "0 16 * * *"
+    - cron: "0 20 * * *"
   workflow_dispatch: {}
 
 permissions:
