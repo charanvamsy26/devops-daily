@@ -16,6 +16,7 @@ find the answer faster than the docs.
 | [2026-06-30](entries/2026-06-30.md) | Terraform remote state locking with S3 + DynamoDB | Terraform / IaC |
 | [2026-07-01](entries/2026-07-01.md) | GitHub Actions → AWS with OIDC (no long-lived keys) | CI/CD / DevSecOps |
 | [2026-07-02](entries/2026-07-02.md) | Liveness, readiness, and startup probes | Kubernetes / Reliability |
+| [2026-07-03](entries/2026-07-03.md) | IAM roles vs users and AssumeRole | AWS / Security |
 <!-- NEXT-ENTRY -->
 
 
