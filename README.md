@@ -17,6 +17,7 @@ find the answer faster than the docs.
 | [2026-07-01](entries/2026-07-01.md) | GitHub Actions → AWS with OIDC (no long-lived keys) | CI/CD / DevSecOps |
 | [2026-07-02](entries/2026-07-02.md) | Liveness, readiness, and startup probes | Kubernetes / Reliability |
 | [2026-07-03](entries/2026-07-03.md) | IAM roles vs users and AssumeRole | AWS / Security |
+| [2026-07-04](entries/2026-07-04.md) | Blue-green vs canary deployments | CI/CD / Delivery |
 <!-- NEXT-ENTRY -->
 
 
