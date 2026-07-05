@@ -18,6 +18,7 @@ find the answer faster than the docs.
 | [2026-07-02](entries/2026-07-02.md) | Liveness, readiness, and startup probes | Kubernetes / Reliability |
 | [2026-07-03](entries/2026-07-03.md) | IAM roles vs users and AssumeRole | AWS / Security |
 | [2026-07-04](entries/2026-07-04.md) | Blue-green vs canary deployments | CI/CD / Delivery |
+| [2026-07-05](entries/2026-07-05.md) | Kubernetes Services and kube-proxy | Kubernetes / Networking |
 <!-- NEXT-ENTRY -->
 
 
