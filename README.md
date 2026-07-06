@@ -19,6 +19,7 @@ find the answer faster than the docs.
 | [2026-07-03](entries/2026-07-03.md) | IAM roles vs users and AssumeRole | AWS / Security |
 | [2026-07-04](entries/2026-07-04.md) | Blue-green vs canary deployments | CI/CD / Delivery |
 | [2026-07-05](entries/2026-07-05.md) | Kubernetes Services and kube-proxy | Kubernetes / Networking |
+| [2026-07-06](entries/2026-07-06.md) | Security groups vs network ACLs | AWS / Networking |
 <!-- NEXT-ENTRY -->
 
 
