@@ -8,9 +8,13 @@ on:
     # first publishes and the rest do nothing. Times span the US-Eastern daytime
     # (12:00/16:00/20:00 UTC ≈ 8am/12pm/4pm ET) so the commit lands on the correct
     # day even with several hours of scheduler delay.
-    - cron: "0 12 * * *"
-    - cron: "0 16 * * *"
-    - cron: "0 20 * * *"
+    # NOTE: avoid minute :00 — top-of-hour scheduled runs are the most likely to
+    # be dropped by GitHub under queue load. Odd minutes + several attempts across
+    # the US-Eastern day maximise the chance at least one fires each day.
+    - cron: "17 12 * * *"
+    - cron: "23 15 * * *"
+    - cron: "37 18 * * *"
+    - cron: "47 21 * * *"
   workflow_dispatch: {}
 
 permissions:
