@@ -21,6 +21,7 @@ find the answer faster than the docs.
 | [2026-07-05](entries/2026-07-05.md) | Kubernetes Services and kube-proxy | Kubernetes / Networking |
 | [2026-07-06](entries/2026-07-06.md) | Security groups vs network ACLs | AWS / Networking |
 | [2026-07-07](entries/2026-07-07.md) | RED and USE monitoring methods | Observability / SRE |
+| [2026-07-08](entries/2026-07-08.md) | Horizontal Pod Autoscaler (HPA) | Kubernetes / Scaling |
 <!-- NEXT-ENTRY -->
 
 
