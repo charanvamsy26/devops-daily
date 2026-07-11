@@ -24,6 +24,7 @@ find the answer faster than the docs.
 | [2026-07-08](entries/2026-07-08.md) | Horizontal Pod Autoscaler (HPA) | Kubernetes / Scaling |
 | [2026-07-09](entries/2026-07-09.md) | ALB vs NLB: choosing a load balancer | AWS / Networking |
 | [2026-07-10](entries/2026-07-10.md) | Prometheus histograms and quantiles | Observability / Prometheus |
+| [2026-07-11](entries/2026-07-11.md) | PodDisruptionBudgets and voluntary disruptions | Kubernetes / Reliability |
 <!-- NEXT-ENTRY -->
 
 
