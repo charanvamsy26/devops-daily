@@ -25,6 +25,7 @@ find the answer faster than the docs.
 | [2026-07-09](entries/2026-07-09.md) | ALB vs NLB: choosing a load balancer | AWS / Networking |
 | [2026-07-10](entries/2026-07-10.md) | Prometheus histograms and quantiles | Observability / Prometheus |
 | [2026-07-11](entries/2026-07-11.md) | PodDisruptionBudgets and voluntary disruptions | Kubernetes / Reliability |
+| [2026-07-12](entries/2026-07-12.md) | S3 storage classes and lifecycle policies | AWS / Storage |
 <!-- NEXT-ENTRY -->
 
 
