@@ -28,6 +28,7 @@ find the answer faster than the docs.
 | [2026-07-12](entries/2026-07-12.md) | S3 storage classes and lifecycle policies | AWS / Storage |
 | [2026-07-13](entries/2026-07-13.md) | Scanning images and IaC with Trivy | DevSecOps / Security |
 | [2026-07-14](entries/2026-07-14.md) | Taints, tolerations, and node affinity | Kubernetes / Scheduling |
+| [2026-07-15](entries/2026-07-15.md) | Terraform modules for reuse | Terraform / IaC |
 <!-- NEXT-ENTRY -->
 
 
