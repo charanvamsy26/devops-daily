@@ -29,6 +29,7 @@ find the answer faster than the docs.
 | [2026-07-13](entries/2026-07-13.md) | Scanning images and IaC with Trivy | DevSecOps / Security |
 | [2026-07-14](entries/2026-07-14.md) | Taints, tolerations, and node affinity | Kubernetes / Scheduling |
 | [2026-07-15](entries/2026-07-15.md) | Terraform modules for reuse | Terraform / IaC |
+| [2026-07-16](entries/2026-07-16.md) | Alertmanager routing and grouping | Observability / Alerting |
 <!-- NEXT-ENTRY -->
 
 
