@@ -30,6 +30,7 @@ find the answer faster than the docs.
 | [2026-07-14](entries/2026-07-14.md) | Taints, tolerations, and node affinity | Kubernetes / Scheduling |
 | [2026-07-15](entries/2026-07-15.md) | Terraform modules for reuse | Terraform / IaC |
 | [2026-07-16](entries/2026-07-16.md) | Alertmanager routing and grouping | Observability / Alerting |
+| [2026-07-17](entries/2026-07-17.md) | NetworkPolicies and default-deny | Kubernetes / Security |
 <!-- NEXT-ENTRY -->
 
 
