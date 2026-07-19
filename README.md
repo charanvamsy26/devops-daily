@@ -32,6 +32,7 @@ find the answer faster than the docs.
 | [2026-07-16](entries/2026-07-16.md) | Alertmanager routing and grouping | Observability / Alerting |
 | [2026-07-17](entries/2026-07-17.md) | NetworkPolicies and default-deny | Kubernetes / Security |
 | [2026-07-18](entries/2026-07-18.md) | Terraform count vs for_each | Terraform / IaC |
+| [2026-07-19](entries/2026-07-19.md) | Reusable and matrix GitHub Actions workflows | CI/CD |
 <!-- NEXT-ENTRY -->
 
 
