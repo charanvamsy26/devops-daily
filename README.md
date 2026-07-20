@@ -33,6 +33,7 @@ find the answer faster than the docs.
 | [2026-07-17](entries/2026-07-17.md) | NetworkPolicies and default-deny | Kubernetes / Security |
 | [2026-07-18](entries/2026-07-18.md) | Terraform count vs for_each | Terraform / IaC |
 | [2026-07-19](entries/2026-07-19.md) | Reusable and matrix GitHub Actions workflows | CI/CD |
+| [2026-07-20](entries/2026-07-20.md) | Kubernetes RBAC: Roles and bindings | Kubernetes / Security |
 <!-- NEXT-ENTRY -->
 
 
