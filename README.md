@@ -35,6 +35,7 @@ find the answer faster than the docs.
 | [2026-07-19](entries/2026-07-19.md) | Reusable and matrix GitHub Actions workflows | CI/CD |
 | [2026-07-20](entries/2026-07-20.md) | Kubernetes RBAC: Roles and bindings | Kubernetes / Security |
 | [2026-07-21](entries/2026-07-21.md) | Terraform lifecycle meta-arguments | Terraform / IaC |
+| [2026-07-22](entries/2026-07-22.md) | Pod Security Standards | DevSecOps / Kubernetes |
 <!-- NEXT-ENTRY -->
 
 
