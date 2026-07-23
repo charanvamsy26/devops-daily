@@ -1,0 +1,51 @@
+# {{DATE}} — Toil, error budgets, and when to stop paging
+
+**Area:** SRE / Practice · **Tags:** `sre` `toil` `error-budget`
+
+## What actually counts as toil
+
+Toil is not "work I dislike" — the SRE book defines it as work that is manual, repetitive, automatable, tactical, devoid of enduring value, and that scales linearly with service growth. Restarting a pod by hand every time a queue backs up is toil; writing the controller that does it automatically is engineering.
+
+Google's rule of thumb: keep toil below 50% of each SRE's time, so the other half goes to engineering work that permanently reduces future toil or adds service features.
+
+```text
+Toil test — score the task:
+  [ ] Manual            [ ] Repetitive        [ ] Automatable
+  [ ] Tactical/reactive [ ] No enduring value [ ] Grows with the service
+More checks -> higher priority to automate or eliminate.
+```
+
+## Error budgets as a decision mechanism
+
+An error budget is simply `1 - SLO`. A 99.9% availability SLO leaves a 0.1% budget — about 43 minutes of full unavailability per 30-day month. The budget turns reliability from an argument into arithmetic:
+
+```text
+SLO 99.9%, 30d window:
+  budget      = 0.1% of 43,200 min = 43.2 min
+  spent       = 31 min (incident on the 12th)
+  remaining   = 12.2 min  -> ship carefully, no risky launches
+```
+
+- Budget remaining: dev teams ship features, take launch risks, run experiments.
+- Budget exhausted: launches pause; engineering effort shifts to reliability work until the budget recovers.
+
+## When to stop paging
+
+Pages should mean "a human must act now or the SLO is at risk." Two smells that a page should be deleted or demoted to a ticket:
+
+```text
+1. The response is always the same mechanical action
+   -> automate the action; the alert becomes a log line.
+2. The alert fires on a cause (CPU high, one replica down)
+   rather than a symptom (SLO burn rate)
+   -> if users aren't affected and the budget isn't burning, nobody
+      should wake up. File a ticket, fix it during business hours.
+```
+
+Every page that doesn't require human judgment is toil with a pager attached.
+
+## Takeaway
+
+Toil and alerting are the same problem in different clothes: if a task or a page is mechanical and users aren't at risk, automate it or demote it — and let the error budget, not opinions, decide when reliability work preempts features.
+
+**Source:** [Google SRE Book — Eliminating Toil](https://sre.google/sre-book/eliminating-toil/)

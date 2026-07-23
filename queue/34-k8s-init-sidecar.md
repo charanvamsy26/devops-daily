@@ -1,0 +1,59 @@
+# {{DATE}} — Init containers and sidecar containers
+
+**Area:** Kubernetes / Workloads · **Tags:** `init-containers` `sidecars` `pod-lifecycle`
+
+## Init containers: sequential setup
+
+Init containers run **before** the app containers, one at a time, each to completion. If one fails, the kubelet restarts it (per the pod's `restartPolicy`) until it succeeds — app containers don't start until every init container has exited 0. Classic uses: waiting for a dependency, running migrations, fetching config, fixing volume permissions.
+
+```yaml
+spec:
+  initContainers:
+    - name: wait-for-db
+      image: busybox:1.36
+      command: ["sh", "-c", "until nc -z db 5432; do sleep 2; done"]
+    - name: run-migrations
+      image: myapp/migrate:1.4
+  containers:
+    - name: app
+      image: myapp/api:1.4
+```
+
+Order is guaranteed: `wait-for-db` finishes, then `run-migrations`, then `app` starts.
+
+## The old sidecar problem
+
+Long-running helpers (log shippers, service-mesh proxies, config reloaders) were traditionally just extra entries in `containers`. Two chronic pains:
+
+1. **Startup ordering** — the app could start before its proxy was ready, dropping early traffic.
+2. **Job termination** — a Job's main container would finish, but the sidecar kept running, so the pod never completed.
+
+## Native sidecars: init containers with restartPolicy Always
+
+Kubernetes now supports sidecars as init containers with a per-container `restartPolicy: Always`:
+
+```yaml
+spec:
+  initContainers:
+    - name: log-shipper
+      image: fluent-bit:2.2
+      restartPolicy: Always     # this makes it a sidecar
+      startupProbe:
+        httpGet: { path: /healthz, port: 2020 }
+  containers:
+    - name: app
+      image: myapp/api:1.4
+```
+
+Semantics you get for free:
+
+- Starts **before** app containers, and only needs to be *started* (probe-ready if a `startupProbe` is set) — it doesn't block on completion like a regular init container.
+- Keeps running alongside the app for the whole pod lifetime, restarting independently if it crashes.
+- **Doesn't block Job completion** — the pod terminates once the main containers finish.
+- Terminated **after** the main containers during shutdown, so it can flush logs or drain connections.
+
+## Takeaway
+
+Use plain init containers for run-once setup steps that must finish before the app starts; use `restartPolicy: Always` on an init container to get a native sidecar with correct startup ordering, independent restarts, and Job-friendly termination.
+
+**Source:** [Kubernetes docs — Sidecar containers](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/)

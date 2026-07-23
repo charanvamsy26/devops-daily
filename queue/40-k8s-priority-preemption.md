@@ -1,0 +1,62 @@
+# {{DATE}} — Pod priority and preemption
+
+**Area:** Kubernetes / Scheduling · **Tags:** `priorityclass` `preemption` `scheduler`
+
+## Why priority exists
+
+When a cluster is full, "first come, first served" is the wrong policy: a batch job that landed early shouldn't block a payment service from scheduling. Pod priority tells the scheduler which pods matter more, and **preemption** lets it evict lower-priority pods from a node to make room for a pending higher-priority pod.
+
+## PriorityClass
+
+Priority is assigned via a cluster-scoped PriorityClass, referenced by name from the pod spec:
+
+```yaml
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: critical-services
+value: 1000000            # higher = more important
+globalDefault: false
+description: "Customer-facing services that must schedule."
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: payments-api
+spec:
+  priorityClassName: critical-services
+  containers:
+    - name: api
+      image: payments:2.1
+```
+
+Two built-in classes exist for the platform itself: `system-cluster-critical` (2000000000) and `system-node-critical` (2000001000) — reserved for components like CoreDNS and CNI daemons. User-defined values must stay below 1 billion. Pods with no PriorityClass get priority 0 (unless a class has `globalDefault: true`).
+
+## How preemption works
+
+When a pod can't schedule, the scheduler looks for a node where evicting some pods with **lower** priority would make it fit. Victims get graceful termination (their `terminationGracePeriodSeconds` is honored), the pending pod records the node in `status.nominatedNodeName`, and it schedules once the victims exit. Key details:
+
+- PodDisruptionBudgets are considered best-effort — preemption *tries* to respect them but **will violate a PDB** if there's no other way to place the higher-priority pod.
+- Equal or higher priority pods are never preempted.
+- Preemption doesn't cascade nicely: the nominated pod can still lose the node to an even higher-priority arrival.
+
+## Non-preempting priority
+
+Sometimes you want queue-jumping without evictions — e.g. important batch jobs that should schedule before other batch work but must not kill running pods:
+
+```yaml
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority-nonpreempting
+value: 100000
+preemptionPolicy: Never    # default is PreemptLowerPriority
+```
+
+These pods go to the front of the scheduling queue but wait for capacity to free up naturally.
+
+## Takeaway
+
+PriorityClass ranks pods, and preemption enforces the ranking by evicting lower-priority pods — even through a PDB if necessary. Define a small, deliberate set of priority tiers, and use `preemptionPolicy: Never` where queue position matters but evictions are unacceptable.
+
+**Source:** [Kubernetes docs — Pod Priority and Preemption](https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/)

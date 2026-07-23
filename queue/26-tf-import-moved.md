@@ -1,0 +1,56 @@
+# {{DATE}} — Terraform import and moved blocks
+
+**Area:** Terraform / IaC · **Tags:** `terraform` `import` `refactoring`
+
+## Config-driven import (Terraform 1.5+)
+
+The old `terraform import` CLI command mutates state immediately with no plan/review step. The `import` block makes importing declarative and plannable:
+
+```hcl
+import {
+  to = aws_s3_bucket.logs
+  id = "my-company-logs-bucket"
+}
+
+resource "aws_s3_bucket" "logs" {
+  bucket = "my-company-logs-bucket"
+}
+```
+
+`terraform plan` shows the import as part of the plan (`1 to import`), and it only happens on `apply`. Even better, Terraform can generate the resource config for you:
+
+```bash
+terraform plan -generate-config-out=generated.tf
+```
+
+Review the generated HCL, clean it up, then apply. Import blocks can be removed after the apply — they're one-shot.
+
+## moved blocks (Terraform 1.1+)
+
+Renaming a resource or moving it into a module normally makes Terraform want to destroy and recreate it. A `moved` block records the rename so state follows the config:
+
+```hcl
+moved {
+  from = aws_instance.app
+  to   = aws_instance.app_server
+}
+
+moved {
+  from = aws_instance.app_server
+  to   = module.compute.aws_instance.app_server
+}
+```
+
+On the next plan, Terraform updates the state addresses instead of planning a replace. Unlike `terraform state mv`, this is reviewable in a PR and safe for every workspace/environment that uses the config.
+
+## When to use which
+
+- `import` block: bring existing infrastructure under management.
+- `moved` block: refactor addresses of resources already under management (renames, module extraction, `count` → `for_each` key changes).
+- `removed` block (1.7+): drop a resource from state without destroying it — the declarative `terraform state rm`.
+
+## Takeaway
+
+Prefer the declarative `import`/`moved`/`removed` blocks over their imperative CLI equivalents: they show up in `terraform plan`, go through code review, and apply consistently across all environments using the module.
+
+**Source:** [Terraform import block](https://developer.hashicorp.com/terraform/language/import)

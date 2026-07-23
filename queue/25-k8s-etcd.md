@@ -1,0 +1,51 @@
+# {{DATE}} — etcd: the Kubernetes datastore
+
+**Area:** Kubernetes / Internals · **Tags:** `etcd` `raft` `control-plane`
+
+## What etcd actually is
+
+etcd is a distributed, strongly consistent key-value store. It's the only stateful component of the Kubernetes control plane — every object (pods, ConfigMaps, Secrets, leases) is persisted there by the API server, and nothing else talks to it directly. Consistency across members comes from the **Raft** consensus algorithm: every write goes through an elected leader and must be acknowledged by a quorum before it's committed.
+
+## Quorum math
+
+A cluster of `n` members tolerates `(n-1)/2` failures, so odd sizes are the rule:
+
+| Members | Quorum | Failures tolerated |
+|---------|--------|--------------------|
+| 1       | 1      | 0                  |
+| 3       | 2      | 1                  |
+| 5       | 3      | 2                  |
+
+Adding a 4th member does **not** improve fault tolerance over 3 — quorum rises to 3, and you still only tolerate 1 failure. If quorum is lost, the cluster becomes read-only-ish from Kubernetes' perspective: no writes, so no new pods, no status updates, no scheduling.
+
+## Watches: how controllers stay in sync
+
+etcd keeps an MVCC history of revisions, and clients can watch a key prefix from a given revision. This is what powers the Kubernetes watch machinery — the API server watches etcd, and controllers/kubelets watch the API server, so changes propagate as events instead of polling:
+
+```bash
+etcdctl watch /registry/pods --prefix
+```
+
+## Maintenance essentials
+
+The keyspace history grows until compacted, and the backend database has a storage quota (2 GB by default). Hitting the quota puts the cluster into a maintenance mode that only allows reads and deletes. Routine care:
+
+```bash
+# take a snapshot backup (do this on a schedule)
+etcdctl snapshot save /backup/etcd-$(date +%F).db
+
+# compact old revisions, then defragment to reclaim disk
+etcdctl compact <revision>
+etcdctl defrag
+
+# check member health and DB size
+etcdctl endpoint status --write-out=table
+```
+
+etcd is also latency-sensitive: Raft heartbeats and fsync-on-commit mean slow disks cause leader elections and apply lag. Fast SSDs for the etcd data dir are non-negotiable in production.
+
+## Takeaway
+
+Kubernetes is only as available and as fast as its etcd cluster: quorum determines write availability, disk fsync latency determines control-plane latency, and skipping compaction/defrag/snapshots is how clusters die. Run odd member counts and back it up on a schedule.
+
+**Source:** [etcd documentation](https://etcd.io/docs/v3.5/op-guide/maintenance/)

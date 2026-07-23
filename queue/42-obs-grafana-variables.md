@@ -1,0 +1,57 @@
+# {{DATE}} — Grafana dashboard variables and templating
+
+**Area:** Observability / Grafana · **Tags:** `grafana` `dashboards` `templating`
+
+## One dashboard, many services
+
+Variables turn hardcoded dashboards into templates. A variable shows up as a dropdown at the top of the dashboard, and panels reference it with `$varname` (or `${varname}`) in queries, titles, and legends:
+
+```promql
+# Panel query with variables instead of hardcoded labels
+sum(rate(http_requests_total{job="$service", namespace="$namespace"}[$__rate_interval]))
+  by (code)
+```
+
+Now one dashboard serves every service and namespace instead of one copy per team.
+
+## Query variables from Prometheus labels
+
+The most useful type is a query variable populated from the data source itself, so the dropdown always reflects what actually exists:
+
+```text
+Variable: namespace
+  Type:  Query
+  Query: label_values(kube_pod_info, namespace)
+
+Variable: service   (chained — depends on namespace)
+  Type:  Query
+  Query: label_values(http_requests_total{namespace="$namespace"}, job)
+```
+
+Chained variables re-query when their parent changes, so picking a namespace narrows the service list automatically.
+
+## Multi-value and "All"
+
+Enabling *Multi-value* and *Include All option* changes how the variable must be used in PromQL — a multi-select renders as a regex alternation, so the matcher has to be `=~`:
+
+```promql
+# Works with multi-select / All (renders as job=~"api|web|worker" or ".*")
+sum(rate(http_requests_total{job=~"$service"}[5m])) by (job)
+
+# Breaks with multi-select: '=' can't match "api|web"
+# sum(rate(http_requests_total{job="$service"}[5m]))
+```
+
+## Built-in and interval variables
+
+Grafana provides global variables like `$__rate_interval`, `$__interval`, and `$__range` that adapt to the dashboard's time range and resolution — `$__rate_interval` is the right default inside `rate()` because it's guaranteed to cover at least four scrape intervals.
+
+```promql
+sum(rate(node_cpu_seconds_total{mode!="idle"}[$__rate_interval])) by (instance)
+```
+
+## Takeaway
+
+Variables make one dashboard serve a whole fleet: populate them with `label_values()`, chain them for drill-down, and remember that multi-value variables require `=~` matchers and `$__rate_interval` beats hardcoded windows.
+
+**Source:** [Grafana dashboard variables](https://grafana.com/docs/grafana/latest/dashboards/variables/)

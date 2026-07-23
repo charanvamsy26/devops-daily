@@ -1,0 +1,55 @@
+# {{DATE}} — cgroups v2: how containers are limited
+
+**Area:** Linux / Containers · **Tags:** `cgroups` `kernel` `resource-limits`
+
+## One unified hierarchy
+
+Control groups (cgroups) are the kernel mechanism that meters and limits CPU, memory, and I/O for groups of processes — they are what container "limits" actually are. cgroups v1 had a separate hierarchy per controller (`/sys/fs/cgroup/cpu`, `/sys/fs/cgroup/memory`, ...), which made coordinated management messy. v2 replaces this with a single unified tree mounted at `/sys/fs/cgroup`, where each directory is a cgroup and controllers are enabled per-subtree:
+
+```bash
+# which controllers are available in this cgroup
+cat /sys/fs/cgroup/cgroup.controllers
+# cpuset cpu io memory hugetlb pids rdma misc
+
+# which controllers are enabled for children
+cat /sys/fs/cgroup/cgroup.subtree_control
+```
+
+## The interface files that matter
+
+Limits are just files. For a container's cgroup:
+
+```bash
+# memory: hard limit and current usage (bytes)
+cat memory.max        # e.g. 536870912  (512Mi), or "max" = unlimited
+cat memory.current
+cat memory.events     # oom / oom_kill counters
+
+# cpu: quota per period, microseconds
+cat cpu.max           # "50000 100000" = 50ms per 100ms = 0.5 CPU
+cat cpu.weight        # 1-10000, relative share under contention (default 100)
+
+# pids: fork-bomb protection
+cat pids.max
+```
+
+A Kubernetes container with `limits: {memory: 512Mi, cpu: 500m}` becomes exactly `memory.max=536870912` and `cpu.max="50000 100000"` in that pod's cgroup. Exceed `cpu.max` and the process is throttled; exceed `memory.max` after reclaim fails and the kernel OOM-kills inside the cgroup.
+
+## What v2 improved
+
+- **`memory.high`** — a soft throttling threshold: processes get slowed and reclaimed before hitting the hard `memory.max`, instead of only having "fine" and "OOM-killed" as states.
+- **Unified accounting** — page cache writeback I/O is charged to the right cgroup, so `io` and `memory` controllers cooperate (v1 couldn't do this).
+- **PSI pressure files** — `cpu.pressure`, `memory.pressure`, `io.pressure` per cgroup expose stall time, a far better saturation signal than utilization.
+
+Check what your node runs:
+
+```bash
+stat -fc %T /sys/fs/cgroup/
+# cgroup2fs -> v2 ; tmpfs -> v1
+```
+
+## Takeaway
+
+Container resource limits are nothing more than values written into cgroup interface files — `memory.max` and `cpu.max` under a unified v2 hierarchy. Knowing the file layout means you can debug throttling and OOM kills at the source instead of guessing from orchestrator symptoms.
+
+**Source:** [man7 — cgroups(7)](https://man7.org/linux/man-pages/man7/cgroups.7.html)

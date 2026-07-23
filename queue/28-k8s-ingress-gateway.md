@@ -1,0 +1,66 @@
+# {{DATE}} — Ingress vs Gateway API
+
+**Area:** Kubernetes / Networking · **Tags:** `ingress` `gateway-api` `http-routing`
+
+## The problem with Ingress
+
+Ingress gives you host- and path-based HTTP routing in a single resource, but the spec is minimal — anything beyond basic routing (rewrites, timeouts, traffic splitting, TLS options) lives in controller-specific annotations. The result: configs full of `nginx.ingress.kubernetes.io/*` annotations that aren't portable across controllers and aren't validated by the API. The Ingress API is officially frozen; new features go into Gateway API.
+
+## Gateway API: role-oriented resources
+
+Gateway API splits routing across three resources, matching who owns what:
+
+- **GatewayClass** — defines the controller/implementation (infrastructure provider)
+- **Gateway** — a listener instance: ports, protocols, TLS certs (cluster operator)
+- **HTTPRoute** (and GRPCRoute, etc.) — routing rules that attach to a Gateway (app developer)
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: prod-gw
+spec:
+  gatewayClassName: example-class
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      tls:
+        certificateRefs:
+          - name: prod-cert
+```
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: checkout-route
+spec:
+  parentRefs:
+    - name: prod-gw
+  hostnames: ["shop.example.com"]
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /checkout
+      backendRefs:
+        - name: checkout-v1
+          port: 8080
+          weight: 90
+        - name: checkout-v2
+          port: 8080
+          weight: 10
+```
+
+Note the `weight` fields: canary traffic splitting is part of the typed spec, not an annotation. Routes can also match on headers and query params, and HTTPRoutes can live in different namespaces than the Gateway they attach to (gated by `allowedRoutes`), so teams manage their own routing without touching the shared listener.
+
+## Which one today
+
+Ingress still works fine for simple host/path routing and has the broadest controller support. But for anything needing traffic splitting, header matching, cross-namespace delegation, or non-HTTP protocols, Gateway API (GA in `gateway.networking.k8s.io/v1`) is the standard, portable answer — same YAML across nginx, Envoy/Istio, cloud LBs.
+
+## Takeaway
+
+Ingress is frozen and pushes real-world features into non-portable annotations; Gateway API replaces it with typed, role-separated resources where traffic splitting and header matching are first-class. New clusters and new routing requirements should start with Gateway API.
+
+**Source:** [Kubernetes docs — Gateway API](https://kubernetes.io/docs/concepts/services-networking/gateway/)

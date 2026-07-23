@@ -1,0 +1,64 @@
+# {{DATE}} — Docker multi-stage builds and layer caching
+
+**Area:** Containers / CI · **Tags:** `docker` `buildkit` `ci`
+
+## Multi-stage: build heavy, ship light
+
+Each `FROM` starts a new stage; only the final stage becomes the image. `COPY --from` pulls artifacts across stages, so compilers, SDKs, and build deps never reach production:
+
+```dockerfile
+# syntax=docker/dockerfile:1
+FROM golang:1.24 AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -o /out/server ./cmd/server
+
+FROM gcr.io/distroless/static-debian12
+COPY --from=build /out/server /server
+ENTRYPOINT ["/server"]
+```
+
+The result drops from a ~800MB toolchain image to a few tens of MB, with a much smaller attack surface.
+
+## Layer caching: order matters
+
+Each instruction creates a cache layer, and one changed layer invalidates every layer after it. So copy the things that change rarely (dependency manifests) before the things that change constantly (source code):
+
+```dockerfile
+# Cache-friendly: deps re-download ONLY when package files change
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+```
+
+`COPY . .` before `npm ci` would bust the dependency cache on every source edit — the single most common Dockerfile performance mistake.
+
+## Cache mounts and CI cache backends
+
+BuildKit cache mounts persist a directory between builds without baking it into a layer — ideal for package manager caches:
+
+```dockerfile
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg/mod \
+    go build -o /out/server ./cmd/server
+```
+
+In ephemeral CI runners the local cache is gone every run, so export it to a backend:
+
+```bash
+docker buildx build \
+  --cache-to type=registry,ref=ghcr.io/acme/app:buildcache,mode=max \
+  --cache-from type=registry,ref=ghcr.io/acme/app:buildcache \
+  -t ghcr.io/acme/app:v1.2.3 .
+```
+
+`mode=max` also caches intermediate stages, not just the layers in the final image — exactly what multi-stage builds need.
+
+## Takeaway
+
+Multi-stage builds decide what ships; layer ordering and cache mounts decide how fast it builds — copy manifests before source, and in CI push the cache to a registry so ephemeral runners can reuse it.
+
+**Source:** [Docker multi-stage builds](https://docs.docker.com/build/building/multi-stage/)

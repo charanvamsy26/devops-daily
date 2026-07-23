@@ -1,0 +1,51 @@
+# {{DATE}} — OpenTelemetry traces, spans, and context propagation
+
+**Area:** Observability / Tracing · **Tags:** `opentelemetry` `tracing` `distributed-systems`
+
+## Anatomy of a trace
+
+A trace is the whole journey of one request through a system; it's made of spans. Each span is a named, timed operation with a `trace_id` (shared by every span in the trace), its own `span_id`, a `parent_span_id` linking it into the tree, plus attributes, events, status, and a `SpanKind` (`SERVER`, `CLIENT`, `PRODUCER`, `CONSUMER`, `INTERNAL`).
+
+```text
+trace_id: 5b8aa5a2d2c872e8321cf37308d69df2
+└── span: GET /checkout          (SERVER,  frontend)
+    ├── span: HTTP GET /cart     (CLIENT,  frontend)
+    │   └── span: GET /cart      (SERVER,  cart-service)
+    └── span: publish order      (PRODUCER, frontend)
+        └── span: process order  (CONSUMER, order-worker)
+```
+
+## Creating spans manually
+
+Auto-instrumentation covers frameworks and clients; custom spans add business context on top:
+
+```python
+from opentelemetry import trace
+
+tracer = trace.get_tracer("checkout.service")
+
+with tracer.start_as_current_span("charge-card") as span:
+    span.set_attribute("order.id", order_id)
+    span.set_attribute("payment.amount_cents", amount)
+    result = charge(order_id, amount)
+    span.add_event("charge.completed", {"provider": "stripe"})
+```
+
+Nesting `start_as_current_span` calls automatically builds the parent/child relationship via the active context.
+
+## Context propagation across services
+
+Spans in different services join the same trace because the context travels with the request. The default propagator is W3C Trace Context — a `traceparent` HTTP header:
+
+```text
+traceparent: 00-5b8aa5a2d2c872e8321cf37308d69df2-051581bf3cb55c13-01
+             ^  ^ trace-id (16 bytes)              ^ parent span-id  ^ flags (01 = sampled)
+```
+
+Instrumented HTTP clients inject this header on outgoing requests and servers extract it on incoming ones. If any hop in the middle (a proxy, a queue, a hand-rolled client) drops the header, the trace breaks into disconnected fragments — the most common cause of "orphan" traces.
+
+## Takeaway
+
+A trace is just a tree of spans stitched together by IDs, and the whole system depends on the `traceparent` context surviving every hop — when traces look broken, check propagation before blaming the backend.
+
+**Source:** [OpenTelemetry traces](https://opentelemetry.io/docs/concepts/signals/traces/)

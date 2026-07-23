@@ -1,0 +1,58 @@
+# {{DATE}} — AKS node pools, system vs user
+
+**Area:** Azure / Kubernetes · **Tags:** `aks` `kubernetes` `nodepools`
+
+## The two modes
+
+Every AKS node pool has a `mode`:
+
+- **System** — hosts critical system pods like CoreDNS and metrics-server. Must run Linux. Every cluster needs at least one, and AKS recommends at least 2 nodes in it for reliability.
+- **User** — runs your application workloads. Can be Linux or Windows, can scale to zero, can use Spot VMs.
+
+The first pool created with the cluster is a system pool. Mixing your apps onto it works, but a noisy workload can starve CoreDNS — which turns into cluster-wide DNS pain.
+
+## Creating a dedicated user pool
+
+```bash
+az aks nodepool add \
+  --resource-group rg-platform \
+  --cluster-name aks-prod \
+  --name apppool \
+  --mode User \
+  --node-count 3 \
+  --node-vm-size Standard_D4s_v5 \
+  --enable-cluster-autoscaler --min-count 3 --max-count 10
+```
+
+You can also flip an existing pool's mode with `az aks nodepool update --mode System|User` — handy for replacing a system pool without downtime (add new system pool, then convert/delete the old one).
+
+## Keeping apps off the system pool
+
+Marking a system pool with the AKS-recognized taint makes it dedicated — only critical system pods (which tolerate it) will schedule there:
+
+```bash
+az aks nodepool add \
+  --resource-group rg-platform \
+  --cluster-name aks-prod \
+  --name syspool \
+  --mode System \
+  --node-count 2 \
+  --node-taints CriticalAddonsOnly=true:NoSchedule
+```
+
+Then steer workloads to user pools with a node selector on the AKS-populated label:
+
+```yaml
+nodeSelector:
+  kubernetes.azure.com/mode: user
+```
+
+## Practical shape for prod
+
+Small dedicated system pool (2–3 modest nodes, tainted) plus one or more user pools sized for the workloads — e.g. a general pool with autoscaling and a Spot pool (`--priority Spot`, User mode only) for interruption-tolerant batch jobs.
+
+## Takeaway
+
+Run a small, tainted, dedicated system node pool so CoreDNS and friends never compete with your apps, and put all workloads on autoscaled user pools — which can scale to zero and use Spot, while system pools cannot.
+
+**Source:** [AKS system node pools](https://learn.microsoft.com/en-us/azure/aks/use-system-pools)
