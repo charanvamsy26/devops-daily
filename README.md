@@ -37,6 +37,7 @@ find the answer faster than the docs.
 | [2026-07-21](entries/2026-07-21.md) | Terraform lifecycle meta-arguments | Terraform / IaC |
 | [2026-07-22](entries/2026-07-22.md) | Pod Security Standards | DevSecOps / Kubernetes |
 | [2026-07-23](entries/2026-07-23.md) | Kubernetes DNS: CoreDNS and service discovery | Kubernetes / Networking |
+| [2026-07-24](entries/2026-07-24.md) | StatefulSets and stable pod identity | Kubernetes / Workloads |
 <!-- NEXT-ENTRY -->
 
 
