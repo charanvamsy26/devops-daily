@@ -40,6 +40,7 @@ find the answer faster than the docs.
 | [2026-07-24](entries/2026-07-24.md) | StatefulSets and stable pod identity | Kubernetes / Workloads |
 | [2026-07-25](entries/2026-07-25.md) | VPC endpoints: gateway vs interface | AWS / Networking |
 | [2026-07-26](entries/2026-07-26.md) | PromQL: rate vs irate vs increase | Observability / Prometheus |
+| [2026-07-27](entries/2026-07-27.md) | etcd: the Kubernetes datastore | Kubernetes / Internals |
 <!-- NEXT-ENTRY -->
 
 
