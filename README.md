@@ -43,6 +43,7 @@ find the answer faster than the docs.
 | [2026-07-27](entries/2026-07-27.md) | etcd: the Kubernetes datastore | Kubernetes / Internals |
 | [2026-07-28](entries/2026-07-28.md) | Terraform import and moved blocks | Terraform / IaC |
 | [2026-07-29](entries/2026-07-29.md) | Argo CD sync waves and hooks | CI/CD / GitOps |
+| [2026-07-30](entries/2026-07-30.md) | Ingress vs Gateway API | Kubernetes / Networking |
 <!-- NEXT-ENTRY -->
 
 
