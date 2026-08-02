@@ -46,6 +46,7 @@ find the answer faster than the docs.
 | [2026-07-30](entries/2026-07-30.md) | Ingress vs Gateway API | Kubernetes / Networking |
 | [2026-07-31](entries/2026-07-31.md) | Lambda cold starts and how to reduce them | AWS / Serverless |
 | [2026-08-01](entries/2026-08-01.md) | OpenTelemetry traces, spans, and context propagation | Observability / Tracing |
+| [2026-08-02](entries/2026-08-02.md) | cgroups v2: how containers are limited | Linux / Containers |
 <!-- NEXT-ENTRY -->
 
 
