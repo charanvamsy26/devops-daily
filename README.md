@@ -49,6 +49,7 @@ find the answer faster than the docs.
 | [2026-08-02](entries/2026-08-02.md) | cgroups v2: how containers are limited | Linux / Containers |
 | [2026-08-03](entries/2026-08-03.md) | Azure managed identities vs service principals | Azure / Security |
 | [2026-08-04](entries/2026-08-04.md) | Toil, error budgets, and when to stop paging | SRE / Practice |
+| [2026-08-05](entries/2026-08-05.md) | Init containers and sidecar containers | Kubernetes / Workloads |
 <!-- NEXT-ENTRY -->
 
 
