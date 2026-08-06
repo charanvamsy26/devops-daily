@@ -50,6 +50,7 @@ find the answer faster than the docs.
 | [2026-08-03](entries/2026-08-03.md) | Azure managed identities vs service principals | Azure / Security |
 | [2026-08-04](entries/2026-08-04.md) | Toil, error budgets, and when to stop paging | SRE / Practice |
 | [2026-08-05](entries/2026-08-05.md) | Init containers and sidecar containers | Kubernetes / Workloads |
+| [2026-08-06](entries/2026-08-06.md) | Terraform workspaces vs directory-per-environment | Terraform / IaC |
 <!-- NEXT-ENTRY -->
 
 
