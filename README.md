@@ -54,6 +54,7 @@ find the answer faster than the docs.
 | [2026-08-07](entries/2026-08-07.md) | Docker multi-stage builds and layer caching | Containers / CI |
 | [2026-08-08](entries/2026-08-08.md) | The Linux OOM killer and container memory | Linux / Reliability |
 | [2026-08-09](entries/2026-08-09.md) | ECR lifecycle policies and image hygiene | AWS / Containers |
+| [2026-08-10](entries/2026-08-10.md) | GitHub Actions environments and deployment protection | CI/CD |
 <!-- NEXT-ENTRY -->
 
 
