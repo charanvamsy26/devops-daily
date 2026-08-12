@@ -56,6 +56,7 @@ find the answer faster than the docs.
 | [2026-08-09](entries/2026-08-09.md) | ECR lifecycle policies and image hygiene | AWS / Containers |
 | [2026-08-10](entries/2026-08-10.md) | GitHub Actions environments and deployment protection | CI/CD |
 | [2026-08-11](entries/2026-08-11.md) | Pod priority and preemption | Kubernetes / Scheduling |
+| [2026-08-12](entries/2026-08-12.md) | AKS node pools, system vs user | Azure / Kubernetes |
 <!-- NEXT-ENTRY -->
 
 
