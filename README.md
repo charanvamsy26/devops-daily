@@ -57,6 +57,7 @@ find the answer faster than the docs.
 | [2026-08-10](entries/2026-08-10.md) | GitHub Actions environments and deployment protection | CI/CD |
 | [2026-08-11](entries/2026-08-11.md) | Pod priority and preemption | Kubernetes / Scheduling |
 | [2026-08-12](entries/2026-08-12.md) | AKS node pools, system vs user | Azure / Kubernetes |
+| [2026-08-13](entries/2026-08-13.md) | Grafana dashboard variables and templating | Observability / Grafana |
 <!-- NEXT-ENTRY -->
 
 
